@@ -20,16 +20,22 @@ import org.eclipse.core.resources.IProject;
  */
 public final class TaskViewContent {
 
-    private final List<EclipseProject> projects;
+    private final List<EclipseProject> projectsFromRootBuild;
+    private final List<EclipseProject> projectsFromIncludedBuild;
     private final List<IProject> faultyProjects;
 
-    public TaskViewContent(List<EclipseProject> projects, List<IProject> faultyProjects) {
-        this.projects = projects;
+    public TaskViewContent(List<EclipseProject> projectsFromRootBuild, List<EclipseProject> projectsFromIncludedBuild, List<IProject> faultyProjects) {
+        this.projectsFromRootBuild = projectsFromRootBuild;
+        this.projectsFromIncludedBuild = projectsFromIncludedBuild;
         this.faultyProjects = faultyProjects;
     }
 
-    public List<EclipseProject> getProjects() {
-        return this.projects;
+    public List<EclipseProject> getProjectsFromRootBuild() {
+        return this.projectsFromRootBuild;
+    }
+
+    public List<EclipseProject> getProjectsFromIncludedBuild() {
+        return this.projectsFromIncludedBuild;
     }
 
     public List<IProject> getFaultyProjects() {

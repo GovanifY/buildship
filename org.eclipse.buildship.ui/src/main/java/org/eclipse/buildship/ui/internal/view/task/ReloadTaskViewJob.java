@@ -9,6 +9,8 @@
  ******************************************************************************/
 package org.eclipse.buildship.ui.internal.view.task;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -90,7 +92,7 @@ final class ReloadTaskViewJob extends ToolingApiJob<TaskViewContent> {
     }
 
     private Set<EclipseProject> fetchEclipseGradleProjects(ModelProvider modelProvider, CancellationTokenSource tokenSource, IProgressMonitor monitor) {
-        Collection<EclipseProject> models = modelProvider.fetchModels(EclipseProject.class, this.modelFetchStrategy, tokenSource, monitor);
+        List<EclipseProject> models = new ArrayList<>(modelProvider.fetchModels(EclipseProject.class, this.modelFetchStrategy, tokenSource, monitor));
         LinkedHashSet<EclipseProject> projects = Sets.newLinkedHashSet();
         for (EclipseProject model : models) {
             projects.addAll(HierarchicalElementUtils.getAll(model));

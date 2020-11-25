@@ -9,7 +9,6 @@
  ******************************************************************************/
 package org.eclipse.buildship.ui.internal.view.task;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,8 +27,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import org.eclipse.buildship.core.internal.CorePlugin;
-import org.eclipse.buildship.core.internal.configuration.GradleProjectNature;
-import org.eclipse.buildship.core.internal.configuration.ProjectConfiguration;
 import org.eclipse.buildship.core.internal.util.gradle.Path;
 
 /**
@@ -58,7 +55,7 @@ public final class TaskViewContentProvider implements ITreeContentProvider {
         ImmutableList.Builder<Object> result = ImmutableList.builder();
         if (input instanceof TaskViewContent) {
             TaskViewContent taskViewContent = (TaskViewContent) input;
-            List<EclipseProject> projects = taskViewContent.getProjects();
+            List<EclipseProject> projects = taskViewContent.getProjectsFromRootBuild();
             List<IProject> faultyProjects = taskViewContent.getFaultyProjects();
             result.addAll(createTopLevelProjectNodes(projects, faultyProjects));
         }
@@ -87,7 +84,7 @@ public final class TaskViewContentProvider implements ITreeContentProvider {
                     GradleProject gradleProject = project.getGradleProject();
                     Optional<IProject> workspaceProject = CorePlugin.workspaceOperations().findProjectByName(project.getName());
                     Map<Path, BuildInvocations> invocations = BuildInvocations.collectAll(gradleProject);
-                    allProjectNodes.add(new ProjectNode(null, project, gradleProject, workspaceProject, isIncludedProject(workspaceProject, project), invocations,
+                    allProjectNodes.add(new ProjectNode(null, project, gradleProject, workspaceProject, invocations,
                             Path.from(gradleProject.getPath())));
                 }
             }
@@ -110,28 +107,12 @@ public final class TaskViewContentProvider implements ITreeContentProvider {
         Optional<IProject> workspaceProject = CorePlugin.workspaceOperations().findProjectByName(eclipseProject.getName());
 
         // create a new node for the given Eclipse project and then recurse into the children
-        ProjectNode projectNode = new ProjectNode(parentProjectNode, eclipseProject, gradleProject, workspaceProject, isIncludedProject(workspaceProject, eclipseProject),
+        ProjectNode projectNode = new ProjectNode(parentProjectNode, eclipseProject, gradleProject, workspaceProject,
                 invocationsContainer, Path.from(gradleProject.getPath()));
         allProjectNodes.add(projectNode);
         for (EclipseProject childProject : eclipseProject.getChildren()) {
             collectProjectNodesRecursively(childProject, projectNode, allProjectNodes, invocationsContainer);
         }
-    }
-
-    private static boolean isIncludedProject(Optional<IProject> workspaceProject, EclipseProject modelProject) {
-        if (!workspaceProject.isPresent()) {
-            return false;
-        }
-
-        IProject project = workspaceProject.get();
-        if (!GradleProjectNature.isPresentOn(project)) {
-            return false;
-        }
-
-        ProjectConfiguration projectConfig = CorePlugin.configurationManager().loadProjectConfiguration(project);
-        File configRootDir = projectConfig.getBuildConfiguration().getRootProjectDirectory();
-        File modelRootDir = modelProject.getProjectIdentifier().getBuildIdentifier().getRootDir();
-        return !modelRootDir.equals(configRootDir);
     }
 
     @Override
@@ -174,7 +155,7 @@ public final class TaskViewContentProvider implements ITreeContentProvider {
             GradleProject gradleProject = childProject.getGradleProject();
             Optional<IProject> workspaceProject = CorePlugin.workspaceOperations().findProjectByName(childProject.getName());
 
-            ProjectNode childProjectNode = new ProjectNode(projectNode, childProject, gradleProject, workspaceProject, isIncludedProject(workspaceProject, eclipseProject), projectNode.getAllBuildInvocations(), Path.from(gradleProject.getPath()));
+            ProjectNode childProjectNode = new ProjectNode(projectNode, childProject, gradleProject, workspaceProject, projectNode.getAllBuildInvocations(), Path.from(gradleProject.getPath()));
             result.add(childProjectNode);
         }
         return result;
