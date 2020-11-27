@@ -9,8 +9,8 @@
  ******************************************************************************/
 package org.eclipse.buildship.core.internal.workspace;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.gradle.api.Action;
@@ -24,7 +24,7 @@ import org.gradle.tooling.model.gradle.GradleBuild;
  * @param <T> The requested model type
  * @author Donat Csikos
  */
-public final class CompositeModelQuery<T, U> implements BuildAction<Collection<T>> {
+public final class CompositeModelQuery<T, U> implements BuildAction<Map<String, T>> {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,22 +45,22 @@ public final class CompositeModelQuery<T, U> implements BuildAction<Collection<T
     }
 
     @Override
-    public Collection<T> execute(BuildController controller) {
-        Collection<T> models = new ArrayList<>();
-        collectRootModels(controller, controller.getBuildModel(), models);
-        return models;
+    public Map<String, T> execute(BuildController controller) {
+        Map<String,T> acc = new HashMap<>();
+        collectRootModels(controller, controller.getBuildModel(), acc, ":");
+        return acc;
     }
 
-    private void collectRootModels(BuildController controller, GradleBuild build, Collection<T> models) {
+    private void collectRootModels(BuildController controller, GradleBuild build, Map<String, T> models, String buildPath) {
         if (this.parameter != null) {
-            models.add(controller.getModel(build.getRootProject(), this.modelType, this.parameterType, this.parameter));
+            models.put(buildPath, controller.getModel(build.getRootProject(), this.modelType, this.parameterType, this.parameter));
         } else {
-            models.add(controller.getModel(build.getRootProject(), this.modelType));
+            models.put(buildPath, controller.getModel(build.getRootProject(), this.modelType));
 
         }
 
         for (GradleBuild includedBuild : build.getIncludedBuilds()) {
-            collectRootModels(controller, includedBuild, models);
+            collectRootModels(controller, includedBuild, models, includedBuild.getRootProject().getName());
         }
     }
 

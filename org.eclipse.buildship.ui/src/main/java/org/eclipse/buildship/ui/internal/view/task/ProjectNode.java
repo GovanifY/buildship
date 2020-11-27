@@ -9,6 +9,7 @@
  ******************************************************************************/
 package org.eclipse.buildship.ui.internal.view.task;
 
+import java.io.File;
 import java.util.Map;
 
 import org.gradle.tooling.model.GradleProject;
@@ -34,14 +35,18 @@ public final class ProjectNode extends BaseProjectNode {
     private final GradleProject gradleProject;
     private final Map<Path, BuildInvocations> allBuildInvocations;
     private final Path projectPath;
+    private final String buildPath;
+    private final File buildRoot;
 
-    public ProjectNode(ProjectNode parentProjectNode, EclipseProject eclipseProject, GradleProject gradleProject, Optional<IProject> workspaceProject, Map<Path, BuildInvocations> allBuildInvocations, Path projectPath) {
+    public ProjectNode(ProjectNode parentProjectNode, EclipseProject eclipseProject, GradleProject gradleProject, Optional<IProject> workspaceProject, Map<Path, BuildInvocations> allBuildInvocations, Path projectPath, String buildPath, File buildRoot) {
         super(workspaceProject);
         this.parentProjectNode = parentProjectNode; // is null for root project
         this.eclipseProject = Preconditions.checkNotNull(eclipseProject);
         this.gradleProject = Preconditions.checkNotNull(gradleProject);
         this.allBuildInvocations = Preconditions.checkNotNull(allBuildInvocations);
         this.projectPath = Preconditions.checkNotNull(projectPath);
+        this.buildPath = buildPath;
+        this.buildRoot = buildRoot;
     }
 
     public String getDisplayName() {
@@ -83,6 +88,19 @@ public final class ProjectNode extends BaseProjectNode {
         return this.allBuildInvocations.get(this.projectPath);
     }
 
+
+    public String getBuildPath() {
+        return this.buildPath;
+    }
+
+    public File getBuildRoot() {
+        return this.buildRoot;
+    }
+
+    public boolean isPartOfIncludedBuild() {
+        return !getBuildPath().equals(":");
+    }
+
     @Override
     public String toString() {
         return this.gradleProject.getName();
@@ -102,11 +120,12 @@ public final class ProjectNode extends BaseProjectNode {
                 && Objects.equal(this.eclipseProject, that.eclipseProject)
                 && Objects.equal(this.gradleProject, that.gradleProject)
                 && Objects.equal(this.allBuildInvocations, that.allBuildInvocations)
-                && Objects.equal(this.projectPath, that.projectPath);
+                && Objects.equal(this.buildPath, that.buildPath)
+                && Objects.equal(this.buildRoot, that.buildRoot);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getWorkspaceProject(), this.parentProjectNode, this.eclipseProject, this.gradleProject, this.allBuildInvocations, this.projectPath);
+        return Objects.hashCode(getWorkspaceProject(), this.parentProjectNode, this.eclipseProject, this.gradleProject, this.allBuildInvocations, this.projectPath, this.buildPath, this.buildRoot);
     }
 }

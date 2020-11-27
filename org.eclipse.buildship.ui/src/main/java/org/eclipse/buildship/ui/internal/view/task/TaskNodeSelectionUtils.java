@@ -87,8 +87,9 @@ public final class TaskNodeSelectionUtils {
     }
 
     private static File workingDirForTask(TaskNode taskNode, File rootDir) {
+        // TODO (donat) task grouping doesn't work
         if (taskNode instanceof ProjectTaskNode) {
-            return rootDir;
+            return taskNode.getParentProjectNode().getBuildRoot();
         } else if (taskNode instanceof TaskSelectorNode) {
             return taskNode.getParentProjectNode().getEclipseProject().getProjectDirectory();
         } else {
