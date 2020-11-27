@@ -102,7 +102,6 @@ public class CompatProjectConnection implements ProjectConnection {
             Map<String, EclipseProject> compatModel = Maps.newLinkedHashMap();
             for (Entry<Object, Object> entry : ((Map<Object, Object>)model).entrySet()) {
                 if (!(entry.getKey() instanceof String) || !(entry.getValue() instanceof EclipseProject)) {
-                    System.err.println("Compatbility model injection failed");
                     return model;
                 }
                 String buildPath = (String) entry.getKey();
